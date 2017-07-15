@@ -1,0 +1,27 @@
+{
+  "name": "chrome-999-cleaner",
+  "version": "1.0.0",
+  "description": "Download the project.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oresh/999-plugin.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oresh/999-plugin/issues"
+  },
+  "homepage": "https://github.com/oresh/999-plugin#readme",
+  "devDependencies": {
+    "path": "^0.12.7",
+    "webpack": "^3.2.0"
+  },
+  "dependencies": {
+    "@types/chrome": "0.0.47"
+  }
+}

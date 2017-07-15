@@ -19,11 +19,12 @@
         "scripts": ["js/background.js"],
         "persistent": false
     },
+    "options_page": "options.html",
     "content_scripts": [
         {
             "matches": ["https://www.999.md/*", "https://999.md/*"],
             "css": ["css/content_script.css"],
-            "js": ["js/content_class.js"]
+            "js": ["js/bundle.js"]
         }
     ],
     "permissions": [

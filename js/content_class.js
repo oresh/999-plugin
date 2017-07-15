@@ -1,3 +1,19 @@
+/**
+ * My TODO list:
+ * 
+ * add settings page;
+ * rewrite the code in TypeScript;
+ * relocate suplementary classes in other files;
+ * relocate translations in json files;
+ * move list of agency names to settings;
+ * add whitelist of resellers in settings;
+ * don't remove ads, but add .adv class to them;
+ * better naming convention
+ * add constants for localstorage and DB workers
+ * make parser as separate class
+ *
+ */
+
 (function() {
 
   class Locale {
@@ -214,7 +230,7 @@
       tick();
     }
 
-    _capitalize_first_letter(string) {
+    _capitalize_string(string) {
       var s = string.toLowerCase();
       if (!s.length) return s;
 
@@ -228,12 +244,12 @@
       var n = out.search(/[A-Za-z]\.[A-Za-z]/);
       if (n != -1) out = out.slice(0, n + 2) + ' ' + out.slice(n + 2);
 
-      if (out.indexOf(',') != -1) return this._capitalize_first_letter(out.split(',')[0]);
+      if (out.indexOf(',') != -1) return this._capitalize_string(out.split(',')[0]);
       
       var num = out.search(/\d+/);
-      if (num != -1) return this._capitalize_first_letter(out.slice(0, num));
+      if (num != -1) return this._capitalize_string(out.slice(0, num));
 
-      return this._capitalize_first_letter(out);
+      return this._capitalize_string(out);
     }
 
     _generate_name(el) {
