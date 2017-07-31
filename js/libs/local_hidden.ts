@@ -1,10 +1,16 @@
 export class LocalStorageHidden {
+  storage_name: string;
+  
+  constructor() {
+    this.storage_name = "999_skips";
+  }
+
   get_all_hidden(): string[] {
-    return JSON.parse(localStorage.getItem("999_skips")) || [];
+    return JSON.parse(localStorage.getItem(this.storage_name)) || [];
   }
 
   save_all_hidden(ids: string[]): void {
-    localStorage.setItem("999_skips", JSON.stringify(ids));
+    localStorage.setItem(this.storage_name, JSON.stringify(ids));
   }
 
   add_one_hidden(id: string): string {

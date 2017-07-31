@@ -1,29 +1,36 @@
+var default_sellers = [
+    'imobil', 'chirie', 'gazda', 'globalprim-const', 'globalprim', 'rentapartment',
+    'anghilina', 'goodtime', 'caseafaceri', 'dom-solutions', 'euroval-cons', 'chirii',
+    'apppel', 'apartamentul-tau', 'platondumitrash', 'classapartment', 'vladasimplu123',
+    'casaluminoasa', 'nighttime', 'exfactor', 'acces', 'abicom', 'ivan-botanika', 'imobio'
+];
+var resellers_el = document.getElementById('resellers');
+var approved_sellers_el = document.getElementById('approved');
+var status_el = document.getElementById('status');
+resellers_el.addEventListener('keyup', save_options);
+approved_sellers_el.addEventListener('keyup', save_options);
+var timer;
 function save_options() {
-    var color_el = document.getElementById('color');
-    var links_el = document.getElementById('like');
-    var color = color_el.value;
-    var likesColor = links_el.checked;
+    var resellers = resellers_el.value;
+    var approved = approved_sellers_el.value;
     chrome.storage.sync.set({
-        favoriteColor: color,
-        likesColor: likesColor
+        resellersList: resellers.split('\n'),
+        approvedList: approved.split('\n')
     }, function () {
-        var status = document.getElementById('status');
-        status.textContent = 'Options saved.';
-        setTimeout(function () {
-            status.textContent = '';
-        }, 750);
+        status_el.textContent = '';
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            status_el.textContent = 'Options saved.';
+        }, 1500);
     });
 }
 function restore_options() {
     chrome.storage.sync.get({
-        favoriteColor: 'red',
-        likesColor: true
+        resellersList: default_sellers,
+        approvedList: ''
     }, function (items) {
-        var color_el = document.getElementById('color');
-        var links_el = document.getElementById('like');
-        color_el.value = items.favoriteColor;
-        links_el.checked = items.likesColor;
+        resellers_el.value = items.resellersList.join('\n');
+        approved_sellers_el.value = items.approvedList.join('\n');
     });
 }
 document.addEventListener('DOMContentLoaded', restore_options);
-document.getElementById('save').addEventListener('click', save_options);

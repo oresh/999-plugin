@@ -2,22 +2,23 @@
 <html>
 <head><title>My Test Extension Options</title></head>
 <body>
+<div class="container">
+	<div class="form">
+		<div class="form-row">
+			<div class="form-label">Resellers match:</div>
+			<textarea class="form-textarea" id="resellers"></textarea>
+		</div>
 
-Favorite color:
-<select id="color">
- <option value="red">red</option>
- <option value="green">green</option>
- <option value="blue">blue</option>
- <option value="yellow">yellow</option>
-</select>
+		<div class="form-row">
+			<div class="form-label">Approved sellers:</div>
+			<textarea class="form-textarea" id="approved"></textarea>
+		</div>
 
-<label>
-  <input type="checkbox" id="like">
-  I like colors.
-</label>
-
-<div id="status"></div>
-<button id="save">Save</button>
+		<div class="form-actions">
+			<div id="status"></div>
+		</div>
+	</div>
+</div>
 
 <script src="js/options.js"></script>
 </body>

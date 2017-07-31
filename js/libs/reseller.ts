@@ -5,23 +5,22 @@ export class Resellers {
   public resellers: string[];
 
   constructor() {
-    this.defaults = [
+    let self = this;
+    self.defaults = [
       'imobil','chirie','gazda','globalprim-const','globalprim','rentapartment',
       'anghilina','goodtime','caseafaceri','dom-solutions','euroval-cons','chirii',
       'apppel','apartamentul-tau','platondumitrash','classapartment','vladasimplu123',
       'casaluminoasa','nighttime','exfactor','acces','abicom','ivan-botanika','imobio'
     ];
-    this.nonresellers = this.get_nonresellers_from_local();
-    this.resellers = this.get_resellers_from_local();
-    this.resellers_len = this.resellers.length;
-  }
 
-  get_resellers_from_local(): string[] {
-    return JSON.parse(localStorage.getItem("999_resellers")) || this.defaults;
-  }
-
-  get_nonresellers_from_local(): string[] {
-    return JSON.parse(localStorage.getItem("999_nonresellers")) || [];
+    chrome.storage.sync.get({
+      resellersList: self.defaults,
+      approvedList: []
+    }, function(items) {
+      self.nonresellers = items.approvedList;
+      self.resellers = items.resellersList;
+      self.resellers_len = self.resellers.length;
+    });
   }
 
   add_to_local(name): void {
@@ -42,27 +41,26 @@ export class Resellers {
   }
 
   is_reseller(el): boolean {
-    //if ()
     let nameElement: HTMLElement = el.getElementsByClassName('adPage__header__stats__owner')[0];
-    if (nameElement.classList.contains('is-verified')) {
-      console.log(nameElement.getElementsByTagName('dd')[0].innerText.toLowerCase(), ' is verified');
-      return true;
-    }
     let name: string = nameElement.getElementsByTagName('dd')[0].innerText.toLowerCase();
-    console.log('name:' , name);
+    name = name.replace(/\s+/g, ''); // strip spaces
+
+    if (this.nonresellers.indexOf(name) != -1) {
+      return false; // break if user is approved.
+    }
+    if (nameElement.classList.contains('is-verified')) {
+      return true; // verified user
+    }
     if (name.replace(/[0-9]/g,'').length == 0) {
-      console.log('is reseller');
       return true; // all numbers
     }
 
     for (let i: number = 0; i < this.resellers_len; i++) {
       if (name.indexOf(this.resellers[i]) != -1) {
-        console.log('is reseller');
         return true;
       }
     }
 
-    console.log('is NOT reseller');
     return false;
   }
 }

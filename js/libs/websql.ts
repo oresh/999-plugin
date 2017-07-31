@@ -21,7 +21,8 @@ export class WebSQLWorker {
   public db: DB;
 
   constructor() {
-    this.db = openDatabase('mydb', '1.0', '999 local cache', 2 * 1024 * 1024);
+    const DB_NAME = '999 local cache';
+    this.db = openDatabase('mydb', '1.0', DB_NAME, 2 * 1024 * 1024);
     this.db.transaction( t => {
       t.executeSql('CREATE TABLE IF NOT EXISTS pages (url unique, data)');
     });

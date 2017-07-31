@@ -1,20 +1,35 @@
 // Saves options to chrome.storage
+const default_sellers: string[] = [
+  'imobil','chirie','gazda','globalprim-const','globalprim','rentapartment',
+  'anghilina','goodtime','caseafaceri','dom-solutions','euroval-cons','chirii',
+  'apppel','apartamentul-tau','platondumitrash','classapartment','vladasimplu123',
+  'casaluminoasa','nighttime','exfactor','acces','abicom','ivan-botanika','imobio'
+];
+
+const resellers_el: HTMLTextAreaElement = document.getElementById('resellers') as HTMLTextAreaElement;
+const approved_sellers_el: HTMLTextAreaElement = document.getElementById('approved') as HTMLTextAreaElement;
+const status_el: HTMLElement = document.getElementById('status');
+
+resellers_el.addEventListener('keyup', save_options);
+approved_sellers_el.addEventListener('keyup', save_options);
+
+var timer;
+
 function save_options() {
-  var color_el = document.getElementById('color') as HTMLInputElement;
-  var links_el = document.getElementById('like') as HTMLInputElement;
-  var color = color_el.value;
-  var likesColor = links_el.checked;
+  let resellers: string = resellers_el.value;
+  let approved: string = approved_sellers_el.value;
 
   chrome.storage.sync.set({
-    favoriteColor: color,
-    likesColor: likesColor
+    resellersList: resellers.split('\n'),
+    approvedList: approved.split('\n')
   }, function() {
+
+    status_el.textContent = '';
+    clearTimeout(timer);
     // Update status to let user know options were saved.
-    var status = document.getElementById('status');
-    status.textContent = 'Options saved.';
-    setTimeout(function() {
-      status.textContent = '';
-    }, 750);
+    timer = setTimeout(function() {
+      status_el.textContent = 'Options saved.';
+    }, 1500);
   });
 }
 
@@ -23,14 +38,12 @@ function save_options() {
 function restore_options() {
   // Use default value color = 'red' and likesColor = true.
   chrome.storage.sync.get({
-    favoriteColor: 'red',
-    likesColor: true
+    resellersList: default_sellers,
+    approvedList: ''
   }, function(items) {
-    var color_el = document.getElementById('color') as HTMLInputElement;
-    var links_el = document.getElementById('like') as HTMLInputElement;
-    color_el.value = items.favoriteColor;
-    links_el.checked = items.likesColor;
+    resellers_el.value = items.resellersList.join('\n');
+    approved_sellers_el.value = items.approvedList.join('\n');
   });
 }
+
 document.addEventListener('DOMContentLoaded', restore_options);
-document.getElementById('save').addEventListener('click', save_options);
