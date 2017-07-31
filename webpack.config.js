@@ -2,8 +2,8 @@ var path = require('path');
 
 module.exports = {
   entry: {
-  	bundle: './js/content_script',
-  	options: './js/options'
+  	bundle: './dist/content_script',
+  	options: './dist/options'
   },
   output: {
   	path: path.join(__dirname, "plugin/js"),
