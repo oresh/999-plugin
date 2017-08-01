@@ -17,11 +17,14 @@ function save_options() {
         resellersList: resellers.split('\n'),
         approvedList: approved.split('\n')
     }, function () {
-        status_el.textContent = '';
         clearTimeout(timer);
+        status_el.textContent = '';
         timer = setTimeout(function () {
             status_el.textContent = 'Options saved.';
-        }, 1500);
+            setTimeout(function () {
+                status_el.textContent = '';
+            }, 1500);
+        }, 800);
     });
 }
 function restore_options() {

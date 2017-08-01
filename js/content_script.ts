@@ -1,6 +1,7 @@
 /**
  * don't remove ads, but add .adv class to them;
  * better naming convention
+ * make options page select as tags https://sean.is/poppin/tags/
  */
 
 import * as dictionary_ru from './dictionaries/ru.dict.json';

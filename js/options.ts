@@ -24,12 +24,15 @@ function save_options() {
     approvedList: approved.split('\n')
   }, function() {
 
-    status_el.textContent = '';
     clearTimeout(timer);
+    status_el.textContent = '';
     // Update status to let user know options were saved.
     timer = setTimeout(function() {
       status_el.textContent = 'Options saved.';
-    }, 1500);
+      setTimeout(function() {
+         status_el.textContent = '';
+      }, 1500);
+    }, 800);
   });
 }
 

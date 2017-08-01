@@ -1,17 +1,24 @@
 <!DOCTYPE html>
 <html>
-<head><title>My Test Extension Options</title></head>
+<head>
+	<title>999 Helper Extension Options</title>
+	<link rel="stylesheet" type="text/css" href="css/options.css"></head>
 <body>
 <div class="container">
 	<div class="form">
+		<div class="form-header">
+			<img src="./img/ext_icons/128.png">
+		</div>
 		<div class="form-row">
 			<div class="form-label">Resellers match:</div>
 			<textarea class="form-textarea" id="resellers"></textarea>
+			<p class="form-description">List of matching users names (partial match) that are resellers</p>
 		</div>
 
 		<div class="form-row">
 			<div class="form-label">Approved sellers:</div>
 			<textarea class="form-textarea" id="approved"></textarea>
+			<p class="form-description">List of approved non-sellers user names (full match)</p>
 		</div>
 
 		<div class="form-actions">
@@ -19,6 +26,7 @@
 		</div>
 	</div>
 </div>
+
 
 <script src="js/options.js"></script>
 </body>
