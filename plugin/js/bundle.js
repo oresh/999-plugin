@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -70,81 +70,14 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var Resellers = (function () {
-    function Resellers() {
-        var self = this;
-        self.defaults = [
-            'imobil', 'chirie', 'gazda', 'globalprim-const', 'globalprim', 'rentapartment',
-            'anghilina', 'goodtime', 'caseafaceri', 'dom-solutions', 'euroval-cons', 'chirii',
-            'apppel', 'apartamentul-tau', 'platondumitrash', 'classapartment', 'vladasimplu123',
-            'casaluminoasa', 'nighttime', 'exfactor', 'acces', 'abicom', 'ivan-botanika', 'imobio'
-        ];
-        chrome.storage.sync.get({
-            resellersList: self.defaults,
-            approvedList: []
-        }, function (items) {
-            self.nonresellers = items.approvedList;
-            self.resellers = items.resellersList;
-            self.resellers_len = self.resellers.length;
-        });
-    }
-    Resellers.prototype.add_to_local = function (name) {
-        this.resellers.push(name);
-        this.save_to_local();
-    };
-    Resellers.prototype.remove_from_local = function (name) {
-        var id_index = this.resellers.indexOf(name);
-        if (id_index != -1) {
-            this.resellers.splice(id_index, 1);
-            this.save_to_local();
-        }
-    };
-    Resellers.prototype.save_to_local = function () {
-        localStorage.setItem("999_resellers", JSON.stringify(this.resellers));
-    };
-    Resellers.prototype.is_reseller = function (el) {
-        var nameElement = el.getElementsByClassName('adPage__header__stats__owner')[0];
-        var name = nameElement.getElementsByTagName('dd')[0].innerText.toLowerCase();
-        name = name.replace(/\s+/g, '');
-        if (this.nonresellers.indexOf(name) != -1) {
-            return false;
-        }
-        if (nameElement.classList.contains('is-verified')) {
-            return true;
-        }
-        if (name.replace(/[0-9]/g, '').length == 0) {
-            return true;
-        }
-        for (var i = 0; i < this.resellers_len; i++) {
-            if (name.indexOf(this.resellers[i]) != -1) {
-                return true;
-            }
-        }
-        return false;
-    };
-    return Resellers;
-}());
-exports.Resellers = Resellers;
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var dictionary_ru = __webpack_require__(2);
-var dictionary_ro = __webpack_require__(3);
-var websql_1 = __webpack_require__(4);
-var local_hidden_1 = __webpack_require__(5);
-var reseller_1 = __webpack_require__(0);
-var locale_1 = __webpack_require__(6);
-var response_parser_1 = __webpack_require__(7);
+var websql_1 = __webpack_require__(1);
+var local_hidden_1 = __webpack_require__(2);
+var locale_1 = __webpack_require__(3);
+var response_parser_1 = __webpack_require__(6);
 (function () {
     var NineNineNinePlus = (function () {
         function NineNineNinePlus() {
-            this.removal_class = 'marked-for-removal';
+            this.removal_classname = 'marked-for-removal';
             this.photo_galleries = {};
             this.observer_config = {
                 attributes: true,
@@ -155,21 +88,17 @@ var response_parser_1 = __webpack_require__(7);
                 characterDataOldValue: false
             };
             this.lang = "ru";
-            this.localstorage_worker = new local_hidden_1.LocalStorageHidden();
-            this.db_worker = new websql_1.WebSQLWorker();
+            this.storage = new local_hidden_1.LocalStorageHidden();
+            this.db = new websql_1.WebSQLWorker();
             this.locale = new locale_1.Locale(this.lang);
-            this.resellers = new reseller_1.Resellers();
             this.parser = new response_parser_1.ResponseParser(this.locale);
-            this.locale.setVocabulary('ru', dictionary_ru);
-            this.locale.setVocabulary('ro', dictionary_ro);
-            this.db_worker.delete_all();
             this.window_load();
         }
         NineNineNinePlus.prototype._removeItem = function (el) {
-            el.classList.add(this.removal_class);
+            el.classList.add(this.removal_classname);
         };
         NineNineNinePlus.prototype._remove_marked_elements = function () {
-            var remove_el = document.getElementsByClassName(this.removal_class);
+            var remove_el = document.getElementsByClassName(this.removal_classname);
             while (remove_el[0]) {
                 remove_el[0].parentNode.removeChild(remove_el[0]);
             }
@@ -211,9 +140,9 @@ var response_parser_1 = __webpack_require__(7);
                 if (res['is_reseller']) {
                     self._photo_items[id_counter].getElementsByClassName('ads-list-photo-item-price')[0].innerHTML += '<span class="from-reseller">' + self.locale.translate('agency') + '</span>';
                 }
-                self.db_worker.add_url(url, res);
+                self.db.add_url(url, res);
             }
-            self.db_worker.find_url(url, function (data) {
+            self.db.find_url(url, function (data) {
                 if (data == false) {
                     self.parser.send_request(url, cb);
                 }
@@ -229,7 +158,7 @@ var response_parser_1 = __webpack_require__(7);
                 var item = target.parentNode;
                 if (target.classList.contains('item-rem')) {
                     var id = self._get_id(item);
-                    self.localstorage_worker.add_one_hidden(id);
+                    self.storage.add_one_hidden(id);
                     item.parentNode.removeChild(item);
                 }
                 if (target.classList.contains('arrow-left') || target.classList.contains('arrow-right')) {
@@ -254,7 +183,7 @@ var response_parser_1 = __webpack_require__(7);
                 list.classList.add('js-click-processed');
             }
         };
-        NineNineNinePlus.prototype.start_thumbs_cleaner = function () {
+        NineNineNinePlus.prototype.thumbs_cleaner = function () {
             var photoItems = document.getElementsByClassName('ads-list-photo-item');
             this._photo_items = photoItems;
             if (photoItems[0].classList.contains('js-cleaner-process')) {
@@ -262,7 +191,6 @@ var response_parser_1 = __webpack_require__(7);
             }
             photoItems[0].classList.add('js-cleaner-process');
             var photos = [];
-            var checker = this.localstorage_worker.is_hidden();
             for (var i = 0, id_counter = 0, len = photoItems.length; i < len; i++) {
                 var item = photoItems[i];
                 if (item == undefined)
@@ -271,8 +199,13 @@ var response_parser_1 = __webpack_require__(7);
                     this._removeItem(item);
                     continue;
                 }
+                var href = item.getElementsByTagName('a')[0].getAttribute('href');
+                if (href.indexOf('/booster/') === 0) {
+                    this._removeItem(item);
+                    continue;
+                }
                 var id = this._get_id(item);
-                if (checker(id)) {
+                if (this.storage.is_hidden(id)) {
                     this._removeItem(item);
                     continue;
                 }
@@ -290,7 +223,7 @@ var response_parser_1 = __webpack_require__(7);
                 item.innerHTML += '<span class="item-rem">' + this.locale.translate('hide') + '</span>';
                 item.getElementsByTagName('a')[0].innerHTML += '<span class="arrow-left" id_counter="' + id_counter + '"></span>';
                 item.getElementsByTagName('a')[0].innerHTML += '<span class="arrow-right" id_counter="' + id_counter + '"></span>';
-                var url = 'https://999.md' + item.getElementsByTagName('a')[0].getAttribute('href');
+                var url = 'https://999.md' + href;
                 this.init_parses(id_counter, url);
                 photos.push(img_src);
                 id_counter++;
@@ -298,8 +231,7 @@ var response_parser_1 = __webpack_require__(7);
             this._remove_marked_elements();
             this.click_listener();
         };
-        NineNineNinePlus.prototype.start_table_cleaner = function () {
-            var checker = this.localstorage_worker.is_hidden();
+        NineNineNinePlus.prototype.table_cleaner = function () {
             var table = document.getElementsByClassName('ads-list-table')[0];
             var trs = table.getElementsByTagName('tr');
             for (var i = 0, len = trs.length; i < len; i++) {
@@ -309,7 +241,7 @@ var response_parser_1 = __webpack_require__(7);
                     continue;
                 }
                 var id = this._get_id(tr);
-                if (checker(id)) {
+                if (this.storage.is_hidden(id)) {
                     this._removeItem(tr);
                     continue;
                 }
@@ -325,10 +257,10 @@ var response_parser_1 = __webpack_require__(7);
             if (window.location.href.indexOf('/real-estate/') == -1)
                 return;
             if (document.getElementsByClassName('ads-list-table').length) {
-                this.start_table_cleaner();
+                this.table_cleaner();
             }
             if (document.getElementsByClassName('ads-list-photo-item').length) {
-                this.start_thumbs_cleaner();
+                this.thumbs_cleaner();
             }
         };
         NineNineNinePlus.prototype.profile_page_extra = function () {
@@ -342,7 +274,7 @@ var response_parser_1 = __webpack_require__(7);
                 for (var i = 0, len = items.length; i < len; i++) {
                     var item = items[i];
                     var id = self._get_id(item);
-                    self.localstorage_worker.add_one_hidden(id);
+                    self.storage.add_one_hidden(id);
                     self._fade_out(item);
                 }
             };
@@ -367,11 +299,14 @@ var response_parser_1 = __webpack_require__(7);
             var ul = document.createElement('ul');
             ul.setAttribute('class', 'list-of-hidden');
             document.getElementsByTagName('body')[0].appendChild(ul);
-            var hidden = this.localstorage_worker.get_all_hidden();
+            var hidden = this.storage.get_all_hidden();
             ul.innerHTML = '<span class="unhide-all">unhide all</span>';
-            for (var i = 0, len = hidden.length; i < len; i++) {
-                ul.innerHTML += '<li class="hidden-item">ID: ' + hidden[i] + ' <a href="http://999.md/' + self.lang + '/' + hidden[i] + '">link</a>';
-                ul.innerHTML += '<span class="unhide" data-id="' + hidden[i] + '">unhide</span>';
+            var props = Object.getOwnPropertyNames(hidden);
+            for (var i = 0, len = props.length; i < len; i++) {
+                var item = props[i];
+                var item_str = '<li class="hidden-item">ID: ' + item + ' <a href="http://999.md/' + self.lang + '/' + item + '">link</a>';
+                item_str += '<span class="unhide" data-id="' + item + '">unhide</span></li>';
+                ul.innerHTML += item_str;
             }
             var fadeAllHidden = function () {
                 var lis = ul.getElementsByTagName('li');
@@ -382,11 +317,11 @@ var response_parser_1 = __webpack_require__(7);
             var ul_click_handler = function (e) {
                 var target = e.target;
                 if (target.classList.contains('unhide-all')) {
-                    localStorage.setItem("999_skips", '[]');
+                    self.storage.remove_all_hidden();
                     fadeAllHidden();
                 }
                 else if (target.classList.contains('unhide')) {
-                    self.localstorage_worker.remove_from_hidden(target.getAttribute('data-id'));
+                    self.storage.remove_from_hidden(target.getAttribute('data-id'));
                     self._fade_out(target.parentNode);
                 }
             };
@@ -427,35 +362,7 @@ var response_parser_1 = __webpack_require__(7);
 
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-module.exports = {
-	"hidden": "спрятанное",
-	"hide": "спрятать",
-	"room": "комната",
-	"rooms": "комнаты",
-	"5rooms": "комнат",
-	"history": "история",
-	"agency": "агентство"
-};
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports) {
-
-module.exports = {
-	"hidden": "ascuns",
-	"hide": "ascunde",
-	"room": "camera",
-	"rooms": "camere",
-	"5rooms": "camere",
-	"history": "istoria",
-	"agency": "agentie"
-};
-
-/***/ }),
-/* 4 */
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -502,7 +409,7 @@ exports.WebSQLWorker = WebSQLWorker;
 
 
 /***/ }),
-/* 5 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -510,34 +417,33 @@ exports.WebSQLWorker = WebSQLWorker;
 Object.defineProperty(exports, "__esModule", { value: true });
 var LocalStorageHidden = (function () {
     function LocalStorageHidden() {
-        this.storage_name = "999_skips";
+        this.storage_name = "999_skips_obj";
+        this.all_hidden = this.get_all_hidden();
     }
     LocalStorageHidden.prototype.get_all_hidden = function () {
-        return JSON.parse(localStorage.getItem(this.storage_name)) || [];
+        return JSON.parse(localStorage.getItem(this.storage_name)) || {};
     };
     LocalStorageHidden.prototype.save_all_hidden = function (ids) {
+        this.all_hidden = ids;
         localStorage.setItem(this.storage_name, JSON.stringify(ids));
     };
     LocalStorageHidden.prototype.add_one_hidden = function (id) {
         var hidden = this.get_all_hidden();
-        hidden.push(id);
+        hidden[id] = true;
         this.save_all_hidden(hidden);
         return id;
     };
     LocalStorageHidden.prototype.remove_from_hidden = function (id) {
-        var hidden = this.get_all_hidden();
-        var id_index = hidden.indexOf(id);
-        if (id_index != -1) {
-            hidden.splice(id_index, 1);
-            this.save_all_hidden(hidden);
-            return hidden;
-        }
+        var hidden = this.all_hidden;
+        delete (hidden[id]);
+        this.save_all_hidden(hidden);
+        return hidden;
     };
-    LocalStorageHidden.prototype.is_hidden = function () {
-        var hidden = this.get_all_hidden();
-        return function (id) {
-            return hidden.indexOf(id) != -1;
-        };
+    LocalStorageHidden.prototype.remove_all_hidden = function () {
+        localStorage.setItem(this.storage_name, '{}');
+    };
+    LocalStorageHidden.prototype.is_hidden = function (id) {
+        return this.all_hidden[id] != undefined;
     };
     return LocalStorageHidden;
 }());
@@ -545,16 +451,20 @@ exports.LocalStorageHidden = LocalStorageHidden;
 
 
 /***/ }),
-/* 6 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var dictionary_ru = __webpack_require__(4);
+var dictionary_ro = __webpack_require__(5);
 var Locale = (function () {
     function Locale(language) {
         if (language === void 0) { language = 'ru'; }
         this.vocabulary = {};
+        this.setVocabulary('ru', dictionary_ru);
+        this.setVocabulary('ro', dictionary_ro);
     }
     Locale.prototype.setVocabulary = function (language, vocabulary) {
         this.vocabulary[language] = vocabulary;
@@ -568,13 +478,41 @@ exports.Locale = Locale;
 
 
 /***/ }),
-/* 7 */
+/* 4 */
+/***/ (function(module, exports) {
+
+module.exports = {
+	"hidden": "спрятанное",
+	"hide": "спрятать",
+	"room": "комната",
+	"rooms": "комнаты",
+	"5rooms": "комнат",
+	"history": "история",
+	"agency": "агентство"
+};
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+module.exports = {
+	"hidden": "ascuns",
+	"hide": "ascunde",
+	"room": "camera",
+	"rooms": "camere",
+	"5rooms": "camere",
+	"history": "istoria",
+	"agency": "agentie"
+};
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var reseller_1 = __webpack_require__(0);
+var reseller_1 = __webpack_require__(7);
 var ResponseParser = (function () {
     function ResponseParser(locale) {
         this.resellers = new reseller_1.Resellers();
@@ -690,7 +628,7 @@ var ResponseParser = (function () {
         if (text.length) {
             var first_text = text[0];
             var description_text = first_text.innerText.toLowerCase();
-            var words = ['rată', 'in rate', 'rata', 'взнос', 'помесячная', 'ежемесечная'];
+            var words = ['rată', 'in rate', 'rata', 'взнос', 'помесячная', 'ежемесечная', 'рассрочка'];
             for (var i = 0, len = words.length; i < len; i++) {
                 if (description_text.indexOf(' ' + words[i] + ' ') != -1) {
                     return true;
@@ -702,6 +640,70 @@ var ResponseParser = (function () {
     return ResponseParser;
 }());
 exports.ResponseParser = ResponseParser;
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Resellers = (function () {
+    function Resellers() {
+        var self = this;
+        self.defaults = [
+            'imobil', 'chirie', 'gazda', 'globalprim-const', 'globalprim', 'rentapartment',
+            'anghilina', 'goodtime', 'caseafaceri', 'dom-solutions', 'euroval-cons', 'chirii',
+            'apppel', 'apartamentul-tau', 'platondumitrash', 'classapartment', 'vladasimplu123',
+            'casaluminoasa', 'nighttime', 'exfactor', 'acces', 'abicom', 'ivan-botanika', 'imobio'
+        ];
+        chrome.storage.sync.get({
+            resellersList: self.defaults,
+            approvedList: []
+        }, function (items) {
+            self.nonresellers = items.approvedList;
+            self.resellers = items.resellersList;
+            self.resellers_len = self.resellers.length;
+        });
+    }
+    Resellers.prototype.add_to_local = function (name) {
+        this.resellers.push(name);
+        this.save_to_local();
+    };
+    Resellers.prototype.remove_from_local = function (name) {
+        var id_index = this.resellers.indexOf(name);
+        if (id_index != -1) {
+            this.resellers.splice(id_index, 1);
+            this.save_to_local();
+        }
+    };
+    Resellers.prototype.save_to_local = function () {
+        localStorage.setItem("999_resellers", JSON.stringify(this.resellers));
+    };
+    Resellers.prototype.is_reseller = function (el) {
+        var nameElement = el.getElementsByClassName('adPage__header__stats__owner')[0];
+        var name = nameElement.getElementsByTagName('dd')[0].innerText.toLowerCase();
+        name = name.replace(/\s+/g, '');
+        if (this.nonresellers[name] != undefined) {
+            return false;
+        }
+        if (nameElement.classList.contains('is-verified')) {
+            return true;
+        }
+        if (name.replace(/[0-9]/g, '').length == 0) {
+            return true;
+        }
+        for (var i = 0; i < this.resellers_len; i++) {
+            if (name.indexOf(this.resellers[i]) != -1) {
+                return true;
+            }
+        }
+        return false;
+    };
+    return Resellers;
+}());
+exports.Resellers = Resellers;
 
 
 /***/ })

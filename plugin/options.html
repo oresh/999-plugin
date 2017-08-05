@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>999 Helper Extension Options</title>
+	<title>999 Helper Extension Options</title>	
+	<link rel="stylesheet" type="text/css" href="css/taggle.css"></head>
 	<link rel="stylesheet" type="text/css" href="css/options.css"></head>
 <body>
 <div class="container">
@@ -11,13 +12,13 @@
 		</div>
 		<div class="form-row">
 			<div class="form-label">Resellers match:</div>
-			<textarea class="form-textarea" id="resellers"></textarea>
+			<div id="resellers_taggle"></div>
 			<p class="form-description">List of matching users names (partial match) that are resellers</p>
 		</div>
 
 		<div class="form-row">
 			<div class="form-label">Approved sellers:</div>
-			<textarea class="form-textarea" id="approved"></textarea>
+			<div id="approved_taggle"></div>
 			<p class="form-description">List of approved non-sellers user names (full match)</p>
 		</div>
 
@@ -27,7 +28,7 @@
 	</div>
 </div>
 
-
+<script src="js/lib/taggle.js"></script>
 <script src="js/options.js"></script>
 </body>
 </html>

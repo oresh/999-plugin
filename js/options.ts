@@ -1,3 +1,14 @@
+/*
+ * @TODO
+ * make options page select as tags https://sean.is/poppin/tags/
+*/
+
+import { Taggle } from './libs/taggle';
+
+export interface NonResellers {
+  [key: string]: boolean
+}
+
 // Saves options to chrome.storage
 const default_sellers: string[] = [
   'imobil','chirie','gazda','globalprim-const','globalprim','rentapartment',
@@ -6,46 +17,73 @@ const default_sellers: string[] = [
   'casaluminoasa','nighttime','exfactor','acces','abicom','ivan-botanika','imobio'
 ];
 
-const resellers_el: HTMLTextAreaElement = document.getElementById('resellers') as HTMLTextAreaElement;
-const approved_sellers_el: HTMLTextAreaElement = document.getElementById('approved') as HTMLTextAreaElement;
 const status_el: HTMLElement = document.getElementById('status');
 
-resellers_el.addEventListener('keyup', save_options);
-approved_sellers_el.addEventListener('keyup', save_options);
+let timer;
 
-var timer;
+let resellers_taggle;
+let approved_taggle;
 
-function save_options() {
-  let resellers: string = resellers_el.value;
-  let approved: string = approved_sellers_el.value;
+function approved_to_obj(approved): NonResellers {
+  let approved_obj: NonResellers = {};
+  approved.forEach(function(el) {
+    approved_obj[el] = true;
+  });
+  return approved_obj;
+}
+
+function obj_to_approved(obj): string[] {
+  let props = Object.getOwnPropertyNames(obj);
+  return props;
+}
+
+function save_options(): void {
+  
+  let resellers = resellers_taggle.getTags().values;
+  let approved = approved_taggle.getTags().values;
 
   chrome.storage.sync.set({
-    resellersList: resellers.split('\n'),
-    approvedList: approved.split('\n')
+    resellersList: resellers,
+    approvedList: approved_to_obj(approved)
   }, function() {
 
     clearTimeout(timer);
-    status_el.textContent = '';
+    status_el.textContent = 'Options saved.';
     // Update status to let user know options were saved.
     timer = setTimeout(function() {
-      status_el.textContent = 'Options saved.';
-      setTimeout(function() {
-         status_el.textContent = '';
-      }, 1500);
-    }, 800);
+      status_el.textContent = '';
+    }, 1000);
   });
 }
 
 // Restores select box and checkbox state using the preferences
 // stored in chrome.storage.
-function restore_options() {
+function restore_options(): void {
   // Use default value color = 'red' and likesColor = true.
   chrome.storage.sync.get({
     resellersList: default_sellers,
-    approvedList: ''
+    approvedList: []
   }, function(items) {
-    resellers_el.value = items.resellersList.join('\n');
-    approved_sellers_el.value = items.approvedList.join('\n');
+
+    resellers_taggle = new Taggle('resellers_taggle', {
+      tags: items.resellersList || [],
+      onTagAdd: save_options,
+      onTagRemove: save_options
+    });
+    var approved = obj_to_approved(items.approvedList);
+    if (obj_to_approved(items.approvedList).length) {
+      approved_taggle = new Taggle('approved_taggle', {
+        tags: obj_to_approved(items.approvedList),
+        onTagAdd: save_options,
+        onTagRemove: save_options
+      });
+    } else {
+      approved_taggle = new Taggle('approved_taggle', {
+        onTagAdd: save_options,
+        onTagRemove: save_options
+      });
+    }
+
   });
 }
 

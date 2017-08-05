@@ -116,7 +116,7 @@ var ResponseParser = (function () {
         if (text.length) {
             var first_text = text[0];
             var description_text = first_text.innerText.toLowerCase();
-            var words = ['rată', 'in rate', 'rata', 'взнос', 'помесячная', 'ежемесечная'];
+            var words = ['rată', 'in rate', 'rata', 'взнос', 'помесячная', 'ежемесечная', 'рассрочка'];
             for (var i = 0, len = words.length; i < len; i++) {
                 if (description_text.indexOf(' ' + words[i] + ' ') != -1) {
                     return true;

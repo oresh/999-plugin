@@ -1,3 +1,6 @@
+/**
+ * replace indexOf with regexp
+ */
 import { Resellers } from './reseller';
 import { Locale } from './locale';
 
@@ -137,7 +140,7 @@ export class ResponseParser {
     if (text.length) {
       var first_text: HTMLElement = text[0] as HTMLElement;
       var description_text: string = first_text.innerText.toLowerCase();
-      var words: string[] = ['rată', 'in rate', 'rata', 'взнос', 'помесячная', 'ежемесечная'];
+      var words: string[] = ['rată', 'in rate', 'rata', 'взнос', 'помесячная', 'ежемесечная', 'рассрочка'];
       for (var i = 0, len = words.length; i < len; i++) {
         if (description_text.indexOf(' ' + words[i] + ' ') != -1) {
           return true;

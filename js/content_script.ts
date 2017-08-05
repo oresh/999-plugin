@@ -1,34 +1,35 @@
 /**
- * don't remove ads, but add .adv class to them;
+ * @TODO list:
+ *
+ * add "approved seller" button on profile page
+ * don't remove ads, but add .adv class to them
  * better naming convention
- * make options page select as tags https://sean.is/poppin/tags/
+ * add checkbox in filter "hide with too low price"
+ * add checkbox hide resellerspf
+ * get rid of typecasting where possible
  */
 
-import * as dictionary_ru from './dictionaries/ru.dict.json';
-import * as dictionary_ro from './dictionaries/ro.dict.json';
 import { WebSQLWorker } from './libs/websql';
-import { LocalStorageHidden } from './libs/local_hidden';
-import { Resellers } from './libs/reseller';
+import { LocalStorageHidden, SkipIDs } from './libs/local_hidden';
 import { Locale } from './libs/locale';
-import { ResponseParser} from './libs/response_parser';
+import { ResponseParser } from './libs/response_parser';
 
 (function() {
 
   class NineNineNinePlus {
 
-    public removal_class: string;
+    public removal_classname: string;
     public photo_galleries: object;
     public _photo_items: HTMLCollectionOf<Element>;
     public observer_config: object;
     public lang: string;
-    public localstorage_worker: LocalStorageHidden;
-    public db_worker: WebSQLWorker;
+    public storage: LocalStorageHidden;
+    public db: WebSQLWorker;
     public locale: Locale;
-    public resellers: Resellers;
     public parser: ResponseParser;
 
     constructor() {
-      this.removal_class = 'marked-for-removal';
+      this.removal_classname = 'marked-for-removal';
       this.photo_galleries = {};
       this.observer_config = {
         attributes: true,
@@ -40,28 +41,26 @@ import { ResponseParser} from './libs/response_parser';
       };
 
       this.lang = "ru";
-      this.localstorage_worker = new LocalStorageHidden();
-      this.db_worker = new WebSQLWorker();
+      this.storage = new LocalStorageHidden();
+      this.db = new WebSQLWorker();
       this.locale = new Locale(this.lang);
-      this.resellers = new Resellers();
       this.parser = new ResponseParser(this.locale);
 
-      this.locale.setVocabulary('ru', dictionary_ru);
-      this.locale.setVocabulary('ro', dictionary_ro);
-
-      this.db_worker.delete_all();
+      //this.db.delete_all();
 
       this.window_load(); // start stuff
     }
 
-    _removeItem(el: HTMLElement): void {
-      el.classList.add(this.removal_class);
+    _removeItem(el: HTMLElement | Element): void {
+      el.classList.add(this.removal_classname);
     }
+
     _remove_marked_elements(): void {
-      let remove_el: HTMLCollectionOf<Element> = document.getElementsByClassName(this.removal_class);
+      let remove_el: HTMLCollectionOf<Element> = document.getElementsByClassName(this.removal_classname);
       while (remove_el[0]) { remove_el[0].parentNode.removeChild(remove_el[0]); }
     }
-    _get_id(el: HTMLElement): string {
+
+    _get_id(el: HTMLElement | Element): string {
       return el.getElementsByTagName('a')[0].getAttribute('href').split('/')[2];
     }
 
@@ -99,10 +98,10 @@ import { ResponseParser} from './libs/response_parser';
         if (res['is_reseller']) {
           self._photo_items[id_counter].getElementsByClassName('ads-list-photo-item-price')[0].innerHTML += '<span class="from-reseller">' + self.locale.translate('agency') + '</span>';
         }
-        self.db_worker.add_url(url, res); // save to DB
+        self.db.add_url(url, res); // save to DB
       }
 
-      self.db_worker.find_url(url, function(data) {
+      self.db.find_url(url, function(data) {
         if (data == false) {
           self.parser.send_request(url, cb); // get from request
         } else {
@@ -119,7 +118,7 @@ import { ResponseParser} from './libs/response_parser';
         
         if (target.classList.contains('item-rem')) {
           var id: string = self._get_id(item);
-          self.localstorage_worker.add_one_hidden(id);
+          self.storage.add_one_hidden(id);
           item.parentNode.removeChild(item);
         }
 
@@ -148,7 +147,7 @@ import { ResponseParser} from './libs/response_parser';
       }
     }
 
-    start_thumbs_cleaner(): void {
+    thumbs_cleaner(): void {
       var photoItems: HTMLCollectionOf<Element> = document.getElementsByClassName('ads-list-photo-item');
       this._photo_items = photoItems;
       if (photoItems[0].classList.contains('js-cleaner-process')) {
@@ -158,32 +157,39 @@ import { ResponseParser} from './libs/response_parser';
       photoItems[0].classList.add('js-cleaner-process');
 
       var photos: string[] = [];
-      var checker = this.localstorage_worker.is_hidden();
 
       for (var i: number = 0, id_counter: number = 0, len: number = photoItems.length; i < len; i++) {
         var item: Element = photoItems[i];
         if (item == undefined) break;
 
         if (item.getElementsByClassName('ads-list-photo-item-price').length == 0) {
-          this._removeItem(<HTMLElement> item);
+          this._removeItem(item);
           continue;
         }
 
-        var id: string = this._get_id(<HTMLElement> item);
-        if (checker(id)) {
-          this._removeItem(<HTMLElement> item);
+        var href: string = item.getElementsByTagName('a')[0].getAttribute('href');
+        if (href.indexOf('/booster/') === 0) {
+          this._removeItem(item);
           continue;
         }
 
+        var id: string = this._get_id(item);
+        if (this.storage.is_hidden(id)) {
+          this._removeItem(item);
+          continue;
+        }
+
+        // @TODO replace with regexp
         var img: Element = item.getElementsByTagName('img')[0];
         var img_src: string = img.getAttribute('src');
         if (img_src.indexOf('noimage.gif') != -1) {
-          this._removeItem(<HTMLElement> item);
+          this._removeItem(item);
           continue;
         }
 
+        // @TODO replace with O(1)
         if (photos.indexOf(img_src) != -1) {
-          this._removeItem(<HTMLElement> item);
+          this._removeItem(item);
           continue;
         }
         
@@ -193,7 +199,7 @@ import { ResponseParser} from './libs/response_parser';
         item.getElementsByTagName('a')[0].innerHTML += '<span class="arrow-left" id_counter="' + id_counter + '"></span>';
         item.getElementsByTagName('a')[0].innerHTML += '<span class="arrow-right" id_counter="' + id_counter + '"></span>';
 
-        var url: string = 'https://999.md' + item.getElementsByTagName('a')[0].getAttribute('href');
+        var url: string = 'https://999.md' + href;
         this.init_parses(id_counter, url);
         
         photos.push(img_src);
@@ -204,8 +210,7 @@ import { ResponseParser} from './libs/response_parser';
       this.click_listener();
     }
 
-    start_table_cleaner(): void {
-      var checker = this.localstorage_worker.is_hidden();
+    table_cleaner(): void {
       var table: Element = document.getElementsByClassName('ads-list-table')[0];
       var trs: NodeListOf<HTMLElement> = table.getElementsByTagName('tr');
 
@@ -218,7 +223,7 @@ import { ResponseParser} from './libs/response_parser';
         }
 
         var id: string = this._get_id(tr);
-        if (checker(id)) {
+        if (this.storage.is_hidden(id)) {
           this._removeItem(tr);
           continue;
         }
@@ -236,11 +241,11 @@ import { ResponseParser} from './libs/response_parser';
     start_cleaners() : void {
       if (window.location.href.indexOf('/real-estate/') == -1) return; // this should only work for real estate.
       if (document.getElementsByClassName('ads-list-table').length) {
-        this.start_table_cleaner();
+        this.table_cleaner();
       }
 
       if (document.getElementsByClassName('ads-list-photo-item').length) {
-        this.start_thumbs_cleaner();
+        this.thumbs_cleaner();
       }
     }
 
@@ -257,8 +262,8 @@ import { ResponseParser} from './libs/response_parser';
         var items: HTMLCollectionOf<Element> = document.getElementsByClassName('profile-ads-list-photo-item');
         for (var i = 0, len = items.length; i < len; i++) {
           var item: Element = items[i];
-          var id: string = self._get_id(item as HTMLElement);
-          self.localstorage_worker.add_one_hidden(id);
+          var id: string = self._get_id(item);
+          self.storage.add_one_hidden(id);
           self._fade_out(item as HTMLElement);
         }
       }
@@ -290,12 +295,15 @@ import { ResponseParser} from './libs/response_parser';
       ul.setAttribute('class','list-of-hidden');
       document.getElementsByTagName('body')[0].appendChild(ul);
 
-      var hidden: string[] = this.localstorage_worker.get_all_hidden();
+      var hidden: SkipIDs = this.storage.get_all_hidden();
 
       ul.innerHTML = '<span class="unhide-all">unhide all</span>';
-      for (var i: number = 0, len: number = hidden.length; i < len; i++) {
-        ul.innerHTML += '<li class="hidden-item">ID: ' + hidden[i] + ' <a href="http://999.md/' + self.lang + '/' + hidden[i] + '">link</a>';
-        ul.innerHTML += '<span class="unhide" data-id="' + hidden[i] + '">unhide</span>';
+      var props: string[] = Object.getOwnPropertyNames(hidden);
+      for (var i: number = 0, len: number = props.length; i < len; i++) {
+        var item: string = props[i];
+        var item_str: string = '<li class="hidden-item">ID: ' + item + ' <a href="http://999.md/' + self.lang + '/' + item + '">link</a>';
+        item_str += '<span class="unhide" data-id="' + item + '">unhide</span></li>'
+        ul.innerHTML += item_str;
       }
 
       var fadeAllHidden = function(): void {
@@ -308,10 +316,10 @@ import { ResponseParser} from './libs/response_parser';
       var ul_click_handler = function(e: Event): void {
         var target: Element = e.target as Element;
         if (target.classList.contains('unhide-all')) {
-          localStorage.setItem("999_skips", '[]');
+          self.storage.remove_all_hidden();
           fadeAllHidden();
         } else if (target.classList.contains('unhide')) {
-          self.localstorage_worker.remove_from_hidden(target.getAttribute('data-id'));
+          self.storage.remove_from_hidden(target.getAttribute('data-id'));
           self._fade_out(target.parentNode as HTMLElement);
         }
       }
@@ -354,6 +362,7 @@ import { ResponseParser} from './libs/response_parser';
       this.show_hidden_page();
     }
   }
+
 
   /* Init 999 подорожник */
   const helper: NineNineNinePlus = new NineNineNinePlus();

@@ -36,7 +36,7 @@ var Resellers = (function () {
         var nameElement = el.getElementsByClassName('adPage__header__stats__owner')[0];
         var name = nameElement.getElementsByTagName('dd')[0].innerText.toLowerCase();
         name = name.replace(/\s+/g, '');
-        if (this.nonresellers.indexOf(name) != -1) {
+        if (this.nonresellers[name] != undefined) {
             return false;
         }
         if (nameElement.classList.contains('is-verified')) {

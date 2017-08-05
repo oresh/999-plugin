@@ -1,6 +1,14 @@
+/**
+ * make nonresellers check O(1);
+ */
+
+export interface NonResellers {
+  [key: string]: boolean
+}
+
 export class Resellers {
   public defaults: string[];
-  public nonresellers: string[];
+  public nonresellers: NonResellers;
   public resellers_len: number;
   public resellers: string[];
 
@@ -45,7 +53,7 @@ export class Resellers {
     let name: string = nameElement.getElementsByTagName('dd')[0].innerText.toLowerCase();
     name = name.replace(/\s+/g, ''); // strip spaces
 
-    if (this.nonresellers.indexOf(name) != -1) {
+    if (this.nonresellers[name] != undefined) {
       return false; // break if user is approved.
     }
     if (nameElement.classList.contains('is-verified')) {
@@ -57,7 +65,7 @@ export class Resellers {
 
     for (let i: number = 0; i < this.resellers_len; i++) {
       if (name.indexOf(this.resellers[i]) != -1) {
-        return true;
+        return true; // name matches with resellers
       }
     }
 

@@ -1,19 +1,19 @@
 declare function openDatabase(connectionString: string, version: string, database: string, memorySize: number): DB;
 
-export interface TransactionResultSet {
+interface TransactionResultSet {
   length: number;
   item: (int : number) => any;
 }
 
-export interface TransactionResults {
+interface TransactionResults {
   rows: TransactionResultSet;
 }
 
-export interface Transaction {
+interface Transaction {
   executeSql: (statement: string, args?: any[], callback?: (t: any, results : TransactionResults) => void) => void;
 }
 
-export interface DB {
+interface DB {
   transaction: (callback: (transaction: Transaction) => void) => void;
 }
 
