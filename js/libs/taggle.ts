@@ -6,6 +6,17 @@
  * @description Taggle is a dependency-less tagging library
  */
 
+'use strict';
+
+const noop: Function = function(): any {};
+const retTrue: Function = function(): boolean {
+  return true;
+};
+const BACKSPACE: number = 8;
+const COMMA: number = 188;
+const TAB: number = 9;
+const ENTER: number = 13;
+
 interface TaggleDefaults {
   additionalTagClasses: string,
   allowDuplicates: boolean,
@@ -32,18 +43,6 @@ interface TaggleDefaults {
   onBeforeTagRemove: Function,
   onTagRemove: Function
 }
-
-
-'use strict';
-
-const noop: Function = function() {};
-const retTrue: Function = function() {
-  return true;
-};
-const BACKSPACE: number = 8;
-const COMMA: number = 188;
-const TAB: number = 9;
-const ENTER: number = 13;
 
 const DEFAULTS: TaggleDefaults = {
   additionalTagClasses: '',
@@ -106,8 +105,8 @@ function _setText(el: HTMLElement, text: string): void {
 
 interface TaggleMeasurements {
   container: {
-    rect: any,
-    style: any,
+    rect: ClientRect,
+    style: CSSStyleDeclaration,
     padding: number
   }
 }
@@ -140,7 +139,7 @@ export class Taggle {
     this.settings = (<any>Object).assign({}, DEFAULTS, options);
     this.measurements = {
       container: {
-        rect: ClientRect,
+        rect: null,
         style: null,
         padding: null
       }
@@ -170,20 +169,19 @@ export class Taggle {
     this._setupTextarea();
     this._attachEvents();
   }
-  
 
   /**
    * Gets all the layout measurements up front
    */
-  _setMeasurements() {
+  _setMeasurements(): void {
     this.measurements.container.rect = this.container.getBoundingClientRect();
     this.measurements.container.style = window.getComputedStyle(this.container);
 
-    var style = this.measurements.container.style;
-    var lpad = parseInt(style['padding-left'] || style.paddingLeft, 10);
-    var rpad = parseInt(style['padding-right'] || style.paddingRight, 10);
-    var lborder = parseInt(style['border-left-width'] || style.borderLeftWidth, 10);
-    var rborder = parseInt(style['border-right-width'] || style.borderRightWidth, 10);
+    const style: CSSStyleDeclaration = this.measurements.container.style;
+    const lpad: number = parseInt(style['padding-left'] || style.paddingLeft, 10);
+    const rpad: number = parseInt(style['padding-right'] || style.paddingRight, 10);
+    const lborder: number = parseInt(style['border-left-width'] || style.borderLeftWidth, 10);
+    const rborder: number = parseInt(style['border-right-width'] || style.borderRightWidth, 10);
 
     this.measurements.container.padding = lpad + rpad + lborder + rborder;
   };
@@ -191,8 +189,8 @@ export class Taggle {
   /**
    * Setup the div container for tags to be entered
    */
-  _setupTextarea() {
-    var fontSize;
+  _setupTextarea(): void {
+    let fontSize: string;
 
     this.list.className = 'taggle_list';
     this.input.type = 'text';
@@ -204,8 +202,8 @@ export class Taggle {
     this.sizer.className = 'taggle_sizer';
 
     if (this.settings.tags.length) {
-      for (var i = 0, len = this.settings.tags.length; i < len; i++) {
-        var taggle = this._createTag(this.settings.tags[i]);
+      for (let i = 0, len = this.settings.tags.length; i < len; i++) {
+        let taggle: HTMLLIElement = this._createTag(this.settings.tags[i]);
         this.list.appendChild(taggle);
       }
     }
@@ -221,7 +219,7 @@ export class Taggle {
       }
     }
 
-    var formattedInput = this.settings.inputFormatter(this.input);
+    let formattedInput = this.settings.inputFormatter(this.input);
     if (formattedInput) {
       this.input = formattedInput;
     }
@@ -237,7 +235,7 @@ export class Taggle {
   /**
    * Attaches neccessary events
    */
-  _attachEvents() {
+  _attachEvents(): void {
     var self = this;
 
     if (this.settings.focusInputOnContainerClick) {
@@ -256,7 +254,7 @@ export class Taggle {
    * Resizes the hidden input where user types to fill in the
    * width of the div
    */
-  _fixInputWidth() {
+  _fixInputWidth(): void {
     var width;
     var inputRect;
     var rect;
@@ -284,11 +282,8 @@ export class Taggle {
 
   /**
    * Returns whether or not the specified tag text can be added
-   * @param  {Event} e event causing the potentially added tag
-   * @param  {String} text tag value
-   * @return {Boolean}
    */
-  _canAdd(e, text) {
+  _canAdd(e: Event, text: string): boolean {
     if (!text) {
       return false;
     }
@@ -322,13 +317,8 @@ export class Taggle {
 
   /**
    * Returns whether a string is in an array based on case sensitivity
-   *
-   * @param  {String} text string to search for
-   * @param  {Array} arr array of strings to search through
-   * @param  {Boolean} caseSensitive
-   * @return {Boolean}
    */
-  _tagIsInArray(text, arr, caseSensitive) {
+  _tagIsInArray(text: string, arr: string[], caseSensitive: boolean): boolean {
     if (caseSensitive) {
       return arr.indexOf(text) !== -1;
     }
@@ -342,10 +332,8 @@ export class Taggle {
 
   /**
    * Appends tag with its corresponding input to the list
-   * @param  {Event} e
-   * @param  {String} text
    */
-  _add(e, text: string = undefined) {
+  _add(e: Event, text: string = undefined): void {
     var self = this;
     var values = text || '';
 
@@ -378,10 +366,9 @@ export class Taggle {
 
   /**
    * Removes last tag if it has already been probed
-   * @param  {Event} e
    */
-  _checkLastTag(e) {
-    e = e || window.event;
+  _checkLastTag(e: KeyboardEvent): void {
+    e = e || window.event as KeyboardEvent;
 
     var taggles = this.container.querySelectorAll('.taggle');
     var lastTaggle = taggles[taggles.length - 1];
@@ -392,7 +379,7 @@ export class Taggle {
     if (this.input.value === '' && e.keyCode === BACKSPACE && !heldDown) {
       if (lastTaggle.classList.contains(hotClass)) {
         this.input.classList.add('taggle_back');
-        this._remove(lastTaggle, e);
+        this._remove(lastTaggle as HTMLLIElement, e);
         this._fixInputWidth();
         this._focusInput();
       }
@@ -407,7 +394,6 @@ export class Taggle {
 
   /**
    * Setter for the hidden input.
-   * @param {Number} width
    */
   _setInputWidth(width: number = 0): void {
     this.input.style.width = (width || 10) + 'px';
@@ -415,10 +401,8 @@ export class Taggle {
 
   /**
    * Checks global tags array if provided tag exists
-   * @param  {String} text
-   * @return {Boolean}
    */
-  _hasDupes(text) {
+  _hasDupes(text: string): boolean {
     var needle = this.tag.values.indexOf(text);
     var tagglelist = this.container.querySelector('.taggle_list');
     var dupes;
@@ -444,10 +428,8 @@ export class Taggle {
 
   /**
    * Checks whether or not the key pressed is acceptable
-   * @param  {Number}  key code
-   * @return {Boolean}
    */
-  _isConfirmKey(key) {
+  _isConfirmKey(key: number): boolean {
     var confirmKey = false;
 
     if (this.settings.submitKeys.indexOf(key) > -1) {
@@ -462,7 +444,7 @@ export class Taggle {
   /**
    * Handles focus state of div container.
    */
-  _focusInput() {
+  _focusInput(): void {
     this._fixInputWidth();
 
     if (!this.container.classList.contains(this.settings.containerFocusClass)) {
@@ -476,15 +458,14 @@ export class Taggle {
 
   /**
    * Runs all the events that need to happen on a blur
-   * @param  {Event} e
    */
-  _blurEvent(e) {
+  _blurEvent(e: KeyboardEvent): void {
     if (this.container.classList.contains(this.settings.containerFocusClass)) {
       this.container.classList.remove(this.settings.containerFocusClass);
     }
 
     if (this.settings.saveOnBlur) {
-      e = e || window.event;
+      e = e || window.event as KeyboardEvent;
 
       this._listenForEndOfContainer();
 
@@ -509,10 +490,9 @@ export class Taggle {
 
   /**
    * Runs all the events that need to run on keydown
-   * @param  {Event} e
    */
-  _keydownEvents(e) {
-    e = e || window.event;
+  _keydownEvents(e: KeyboardEvent): void {
+    e = e || window.event as KeyboardEvent;
 
     var key = e.keyCode;
     this.pasting = false;
@@ -535,10 +515,9 @@ export class Taggle {
 
   /**
    * Runs all the events that need to run on keyup
-   * @param  {Event} e
    */
-  _keyupEvents(e) {
-    e = e || window.event;
+  _keyupEvents(e: KeyboardEvent): void {
+    e = e || window.event as KeyboardEvent;
 
     this.input.classList.remove('taggle_back');
 
@@ -552,9 +531,8 @@ export class Taggle {
 
   /**
    * Confirms the inputted value to be converted to a tag
-   * @param  {Event} e
    */
-  _confirmValidTagEvent(e) {
+  _confirmValidTagEvent(e): void {
     e = e || window.event;
 
     // prevents from jumping out of textarea
@@ -571,7 +549,7 @@ export class Taggle {
   /**
    * Approximates when the hidden input should break to the next line
    */
-  _listenForEndOfContainer() {
+  _listenForEndOfContainer(): void {
     var width = this.sizer.getBoundingClientRect().width;
     var max = this.measurements.container.rect.width - this.measurements.container.padding;
     var size = parseInt(this.sizer.style.fontSize, 10);
@@ -582,7 +560,7 @@ export class Taggle {
     }
   };
 
-  _createTag(text) {
+  _createTag(text: string): HTMLLIElement {
     var li = document.createElement('li');
     var close = document.createElement('button');
     var hidden = document.createElement('input');
@@ -620,19 +598,19 @@ export class Taggle {
 
     if (this.settings.attachTagId) {
       this._id += 1;
-      text = {
+      var text_obj = {
         text: text,
         id: this._id
       };
     }
 
-    this.tag.values.push(text);
+    this.tag.values.push(text_obj);
     this.tag.elements.push(li);
 
     return li;
   };
 
-  _showPlaceholder() {
+  _showPlaceholder(): void {
     if (this.placeholder) {
       this.placeholder.style.opacity = '1';
     }
@@ -640,17 +618,15 @@ export class Taggle {
 
   /**
    * Removes tag from the tags collection
-   * @param  {li} li List item to remove
-   * @param  {Event} e
    */
-  _remove(li, e = false) {
+  _remove(li: HTMLLIElement, e?: KeyboardEvent): void {
     var self = this;
     var text;
     var elem;
     var index;
 
     if (li.tagName.toLowerCase() !== 'li') {
-      li = li.parentNode;
+      li = li.parentNode as HTMLLIElement;
     }
 
     elem = (li.tagName.toLowerCase() === 'a') ? li.parentNode : li;
@@ -685,14 +661,12 @@ export class Taggle {
 
   /**
    * Format the text for a tag
-   * @param {String} text Tag text
-   * @return {String}
    */
-  _formatTag(text) {
+  _formatTag(text: string): string {
     return this.settings.preserveCase ? text : text.toLowerCase();
   };
 
-  getTags() {
+  getTags(): TaggleTag {
     return {
       elements: this.getTagElements(),
       values: this.getTagValues()
@@ -719,7 +693,7 @@ export class Taggle {
     return this.container;
   };
 
-  add(text) {
+  add(text): this {
     var isArr = _isArray(text);
 
     if (isArr) {
@@ -736,7 +710,7 @@ export class Taggle {
     return this;
   };
 
-  remove(text, all) {
+  remove(text, all): this {
     var len = this.tag.values.length - 1;
     var found = false;
 
@@ -761,7 +735,7 @@ export class Taggle {
     return this;
   };
 
-  removeAll() {
+  removeAll():this {
     for (var i = this.tag.values.length - 1; i >= 0; i--) {
       this._remove(this.tag.elements[i]);
     }
@@ -771,7 +745,7 @@ export class Taggle {
     return this;
   };
 
-  setOptions(options) {
+  setOptions(options): this {
     this.settings = (<any>Object).assign({}, this.settings, options || {});
 
     return this;

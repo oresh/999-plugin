@@ -7,6 +7,7 @@
  * add checkbox in filter "hide with too low price"
  * add checkbox hide resellerspf
  * get rid of typecasting where possible
+ * hide item from inner page
  */
 
 import { WebSQLWorker } from './libs/websql';

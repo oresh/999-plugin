@@ -1,6 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 'use strict';
+Object.defineProperty(exports, "__esModule", { value: true });
 var noop = function () { };
 var retTrue = function () {
     return true;
@@ -69,7 +68,7 @@ var Taggle = (function () {
         this.settings = Object.assign({}, DEFAULTS, options);
         this.measurements = {
             container: {
-                rect: ClientRect,
+                rect: null,
                 style: null,
                 padding: null
             }
@@ -400,12 +399,12 @@ var Taggle = (function () {
         }
         if (this.settings.attachTagId) {
             this._id += 1;
-            text = {
+            var text_obj = {
                 text: text,
                 id: this._id
             };
         }
-        this.tag.values.push(text);
+        this.tag.values.push(text_obj);
         this.tag.elements.push(li);
         return li;
     };
@@ -417,7 +416,6 @@ var Taggle = (function () {
     };
     ;
     Taggle.prototype._remove = function (li, e) {
-        if (e === void 0) { e = false; }
         var self = this;
         var text;
         var elem;
