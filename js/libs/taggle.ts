@@ -46,22 +46,22 @@ const TAB: number = 9;
 const ENTER: number = 13;
 
 const DEFAULTS: TaggleDefaults = {
-  additionalTagClasses: '',
+  additionalTagClasses: "",
   allowDuplicates: false,
   saveOnBlur: false,
   clearOnBlur: true,
-  duplicateTagClass: '',
-  containerFocusClass: 'active',
+  duplicateTagClass: "",
+  containerFocusClass: "active",
   focusInputOnContainerClick: true,
-  hiddenInputName: 'taggles[]',
+  hiddenInputName: "taggles[]",
   tags: [],
-  delimeter: ',',
+  delimeter: ",",
   attachTagId: false,
   allowedTags: [],
   disallowedTags: [],
   maxTags: null,
   tabIndex: 1,
-  placeholder: 'Enter tags...',
+  placeholder: "Enter tags...",
   submitKeys: [COMMA, TAB, ENTER],
   preserveCase: false,
   inputFormatter: noop,
@@ -76,7 +76,7 @@ function _isArray(arr: any): boolean {
   if (Array.isArray) {
     return Array.isArray(arr);
   }
-  return Object.prototype.toString.call(arr) === '[object Array]';
+  return Object.prototype.toString.call(arr) === "[object Array]";
 }
 
 function _on(element, eventName, handler): void {
@@ -84,15 +84,15 @@ function _on(element, eventName, handler): void {
     element.addEventListener(eventName, handler, false);
   }
   else if (element.attachEvent) {
-    element.attachEvent('on' + eventName, handler);
+    element.attachEvent("on" + eventName, handler);
   }
   else {
-    element['on' + eventName] = handler;
+    element["on" + eventName] = handler;
   }
 }
 
 function _trim(str: string): string {
-  return str.replace(/^\s+|\s+$/g, '');
+  return str.replace(/^\s+|\s+$/g, "");
 }
 
 function _setText(el: HTMLElement, text: string): void {
@@ -150,18 +150,18 @@ export class Taggle {
       values: [],
       elements: []
     };
-    this.list = document.createElement('ul');
-    this.inputLi = document.createElement('li');
-    this.input = document.createElement('input');
-    this.sizer = document.createElement('div');
+    this.list = document.createElement("ul");
+    this.inputLi = document.createElement("li");
+    this.input = document.createElement("input");
+    this.sizer = document.createElement("div");
     this.pasting = false;
     this.placeholder = null;
 
     if (this.settings.placeholder) {
-      this.placeholder = document.createElement('span');
+      this.placeholder = document.createElement("span");
     }
 
-    if (typeof el === 'string') {
+    if (typeof el === "string") {
       this.container = document.getElementById(el);
     }
 
@@ -180,10 +180,10 @@ export class Taggle {
     this.measurements.container.style = window.getComputedStyle(this.container);
 
     var style = this.measurements.container.style;
-    var lpad = parseInt(style['padding-left'] || style.paddingLeft, 10);
-    var rpad = parseInt(style['padding-right'] || style.paddingRight, 10);
-    var lborder = parseInt(style['border-left-width'] || style.borderLeftWidth, 10);
-    var rborder = parseInt(style['border-right-width'] || style.borderRightWidth, 10);
+    var lpad = parseInt(style["padding-left"] || style.paddingLeft, 10);
+    var rpad = parseInt(style["padding-right"] || style.paddingRight, 10);
+    var lborder = parseInt(style["border-left-width"] || style.borderLeftWidth, 10);
+    var rborder = parseInt(style["border-right-width"] || style.borderRightWidth, 10);
 
     this.measurements.container.padding = lpad + rpad + lborder + rborder;
   };
@@ -194,14 +194,14 @@ export class Taggle {
   _setupTextarea() {
     var fontSize;
 
-    this.list.className = 'taggle_list';
-    this.input.type = 'text';
+    this.list.className = "taggle_list";
+    this.input.type = "text";
     // Make sure no left/right padding messes with the input sizing
-    this.input.style.paddingLeft = '0';
-    this.input.style.paddingRight = '0';
-    this.input.className = 'taggle_input';
+    this.input.style.paddingLeft = "0";
+    this.input.style.paddingRight = "0";
+    this.input.className = "taggle_input";
     this.input.tabIndex = this.settings.tabIndex;
-    this.sizer.className = 'taggle_sizer';
+    this.sizer.className = "taggle_sizer";
 
     if (this.settings.tags.length) {
       for (var i = 0, len = this.settings.tags.length; i < len; i++) {
@@ -211,8 +211,8 @@ export class Taggle {
     }
 
     if (this.placeholder) {
-      this.placeholder.style.opacity = '0';
-      this.placeholder.classList.add('taggle_placeholder');
+      this.placeholder.style.opacity = "0";
+      this.placeholder.classList.add("taggle_placeholder");
       this.container.appendChild(this.placeholder);
       _setText(this.placeholder, this.settings.placeholder);
 
@@ -241,15 +241,15 @@ export class Taggle {
     var self = this;
 
     if (this.settings.focusInputOnContainerClick) {
-      _on(this.container, 'click', function() {
+      _on(this.container, "click", function() {
         self.input.focus();
       });
     }
 
-    _on(this.input, 'focus', this._focusInput.bind(this));
-    _on(this.input, 'blur', this._blurEvent.bind(this));
-    _on(this.input, 'keydown', this._keydownEvents.bind(this));
-    _on(this.input, 'keyup', this._keyupEvents.bind(this));
+    _on(this.input, "focus", this._focusInput.bind(this));
+    _on(this.input, "blur", this._blurEvent.bind(this));
+    _on(this.input, "keydown", this._keydownEvents.bind(this));
+    _on(this.input, "keyup", this._keyupEvents.bind(this));
   };
 
   /**
@@ -347,9 +347,9 @@ export class Taggle {
    */
   _add(e, text: string = undefined) {
     var self = this;
-    var values = text || '';
+    var values = text || "";
 
-    if (typeof text !== 'string') {
+    if (typeof text !== "string") {
       values = _trim(this.input.value);
     }
 
@@ -370,7 +370,7 @@ export class Taggle {
 
       self.settings.onTagAdd(e, val);
 
-      self.input.value = '';
+      self.input.value = "";
       self._fixInputWidth();
       self._focusInput();
     });
@@ -383,15 +383,15 @@ export class Taggle {
   _checkLastTag(e) {
     e = e || window.event;
 
-    var taggles = this.container.querySelectorAll('.taggle');
+    var taggles = this.container.querySelectorAll(".taggle");
     var lastTaggle = taggles[taggles.length - 1];
-    var hotClass = 'taggle_hot';
-    var heldDown = this.input.classList.contains('taggle_back');
+    var hotClass = "taggle_hot";
+    var heldDown = this.input.classList.contains("taggle_back");
 
     // prevent holding backspace from deleting all tags
-    if (this.input.value === '' && e.keyCode === BACKSPACE && !heldDown) {
+    if (this.input.value === "" && e.keyCode === BACKSPACE && !heldDown) {
       if (lastTaggle.classList.contains(hotClass)) {
-        this.input.classList.add('taggle_back');
+        this.input.classList.add("taggle_back");
         this._remove(lastTaggle, e);
         this._fixInputWidth();
         this._focusInput();
@@ -410,7 +410,7 @@ export class Taggle {
    * @param {Number} width
    */
   _setInputWidth(width: number = 0): void {
-    this.input.style.width = (width || 10) + 'px';
+    this.input.style.width = (width || 10) + "px";
   };
 
   /**
@@ -420,11 +420,11 @@ export class Taggle {
    */
   _hasDupes(text) {
     var needle = this.tag.values.indexOf(text);
-    var tagglelist = this.container.querySelector('.taggle_list');
+    var tagglelist = this.container.querySelector(".taggle_list");
     var dupes;
 
     if (this.settings.duplicateTagClass) {
-      dupes = tagglelist.querySelectorAll('.' + this.settings.duplicateTagClass);
+      dupes = tagglelist.querySelectorAll("." + this.settings.duplicateTagClass);
       for (var i = 0, len = dupes.length; i < len; i++) {
         dupes[i].classList.remove(this.settings.duplicateTagClass);
       }
@@ -470,7 +470,7 @@ export class Taggle {
     }
 
     if (this.placeholder) {
-      this.placeholder.style.opacity = '0';
+      this.placeholder.style.opacity = "0";
     }
   };
 
@@ -488,7 +488,7 @@ export class Taggle {
 
       this._listenForEndOfContainer();
 
-      if (this.input.value !== '') {
+      if (this.input.value !== "") {
         this._confirmValidTagEvent(e);
         return;
       }
@@ -498,7 +498,7 @@ export class Taggle {
       }
     }
     else if (this.settings.clearOnBlur) {
-      this.input.value = '';
+      this.input.value = "";
       this._setInputWidth();
     }
 
@@ -523,7 +523,7 @@ export class Taggle {
       this.pasting = true;
     }
 
-    if (this._isConfirmKey(key) && this.input.value !== '') {
+    if (this._isConfirmKey(key) && this.input.value !== "") {
       this._confirmValidTagEvent(e);
       return;
     }
@@ -540,11 +540,11 @@ export class Taggle {
   _keyupEvents(e) {
     e = e || window.event;
 
-    this.input.classList.remove('taggle_back');
+    this.input.classList.remove("taggle_back");
 
     _setText(this.sizer, this.input.value);
 
-    if (this.pasting && this.input.value !== '') {
+    if (this.pasting && this.input.value !== "") {
       this._add(e);
       this.pasting = false;
     }
@@ -578,29 +578,29 @@ export class Taggle {
 
     // 1.5 just seems to be a good multiplier here
     if (width + (size * 1.5) > parseInt(this.input.style.width, 10)) {
-      this.input.style.width = max + 'px';
+      this.input.style.width = max + "px";
     }
   };
 
   _createTag(text) {
-    var li = document.createElement('li');
-    var close = document.createElement('button');
-    var hidden = document.createElement('input');
-    var span = document.createElement('span');
+    var li = document.createElement("li");
+    var close = document.createElement("button");
+    var hidden = document.createElement("input");
+    var span = document.createElement("span");
 
     text = this._formatTag(text);
 
-    close.innerHTML = '&times;';
-    close.className = 'close';
-    close.type = 'button';
-    _on(close, 'click', this._remove.bind(this, close));
+    close.innerHTML = "&times;";
+    close.className = "close";
+    close.type = "button";
+    _on(close, "click", this._remove.bind(this, close));
 
     _setText(span, text);
-    span.className = 'taggle_text';
+    span.className = "taggle_text";
 
-    li.className = 'taggle ' + this.settings.additionalTagClasses;
+    li.className = "taggle " + this.settings.additionalTagClasses;
 
-    hidden.type = 'hidden';
+    hidden.type = "hidden";
     hidden.value = text;
     hidden.name = this.settings.hiddenInputName;
 
@@ -610,12 +610,12 @@ export class Taggle {
 
     var formatted = this.settings.tagFormatter(li);
 
-    if (typeof formatted !== 'undefined') {
+    if (typeof formatted !== "undefined") {
       li = formatted;
     }
 
-    if (!(li instanceof HTMLElement) || li.tagName !== 'LI') {
-      throw new Error('tagFormatter must return an li element');
+    if (!(li instanceof HTMLElement) || li.tagName !== "LI") {
+      throw new Error("tagFormatter must return an li element");
     }
 
     if (this.settings.attachTagId) {
@@ -634,7 +634,7 @@ export class Taggle {
 
   _showPlaceholder() {
     if (this.placeholder) {
-      this.placeholder.style.opacity = '1';
+      this.placeholder.style.opacity = "1";
     }
   };
 
@@ -649,11 +649,11 @@ export class Taggle {
     var elem;
     var index;
 
-    if (li.tagName.toLowerCase() !== 'li') {
+    if (li.tagName.toLowerCase() !== "li") {
       li = li.parentNode;
     }
 
-    elem = (li.tagName.toLowerCase() === 'a') ? li.parentNode : li;
+    elem = (li.tagName.toLowerCase() === "a") ? li.parentNode : li;
     index = this.tag.elements.indexOf(elem);
 
     text = this.tag.values[index];
@@ -724,7 +724,7 @@ export class Taggle {
 
     if (isArr) {
       for (var i = 0, len = text.length; i < len; i++) {
-        if (typeof text[i] === 'string') {
+        if (typeof text[i] === "string") {
           this._add(null, text[i]);
         }
       }

@@ -7,7 +7,6 @@ var response_parser_1 = require("./libs/response_parser");
 (function () {
     var NineNineNinePlus = (function () {
         function NineNineNinePlus() {
-            this.removal_classname = 'marked-for-removal';
             this.photo_galleries = {};
             this.observer_config = {
                 attributes: true,
@@ -22,18 +21,17 @@ var response_parser_1 = require("./libs/response_parser");
             this.db = new websql_1.WebSQLWorker();
             this.locale = new locale_1.Locale(this.lang);
             this.parser = new response_parser_1.ResponseParser(this.locale);
-            this.window_load();
+            this.on_window_loaded();
         }
-        NineNineNinePlus.prototype._removeItem = function (el) {
-            el.classList.add(this.removal_classname);
+        NineNineNinePlus.prototype._mark_for_removal = function (el) {
+            el.classList.add('marked-for-removal');
         };
-        NineNineNinePlus.prototype._remove_marked_elements = function () {
-            var remove_el = document.getElementsByClassName(this.removal_classname);
-            while (remove_el[0]) {
+        NineNineNinePlus.prototype._remove_marked = function () {
+            var remove_el = document.getElementsByClassName('marked-for-removal');
+            while (remove_el[0])
                 remove_el[0].parentNode.removeChild(remove_el[0]);
-            }
         };
-        NineNineNinePlus.prototype._get_id = function (el) {
+        NineNineNinePlus.prototype._get_item_id = function (el) {
             return el.getElementsByTagName('a')[0].getAttribute('href').split('/')[2];
         };
         NineNineNinePlus.prototype._fade_out = function (el) {
@@ -53,7 +51,7 @@ var response_parser_1 = require("./libs/response_parser");
             };
             tick();
         };
-        NineNineNinePlus.prototype.init_parses = function (id_counter, url) {
+        NineNineNinePlus.prototype.parse = function (id_counter, url) {
             var self = this;
             function cb(res) {
                 if (res == false)
@@ -81,13 +79,13 @@ var response_parser_1 = require("./libs/response_parser");
                 }
             });
         };
-        NineNineNinePlus.prototype.click_listener = function () {
+        NineNineNinePlus.prototype.handle_click_events = function () {
             var self = this;
             function _click_handler(e) {
                 var target = e.target;
                 var item = target.parentNode;
                 if (target.classList.contains('item-rem')) {
-                    var id = self._get_id(item);
+                    var id = self._get_item_id(item);
                     self.storage.add_one_hidden(id);
                     item.parentNode.removeChild(item);
                 }
@@ -113,7 +111,7 @@ var response_parser_1 = require("./libs/response_parser");
                 list.classList.add('js-click-processed');
             }
         };
-        NineNineNinePlus.prototype.thumbs_cleaner = function () {
+        NineNineNinePlus.prototype.filter_thumbs_list_items = function () {
             var photoItems = document.getElementsByClassName('ads-list-photo-item');
             this._photo_items = photoItems;
             if (photoItems[0].classList.contains('js-cleaner-process')) {
@@ -126,27 +124,27 @@ var response_parser_1 = require("./libs/response_parser");
                 if (item == undefined)
                     break;
                 if (item.getElementsByClassName('ads-list-photo-item-price').length == 0) {
-                    this._removeItem(item);
+                    this._mark_for_removal(item);
                     continue;
                 }
                 var href = item.getElementsByTagName('a')[0].getAttribute('href');
                 if (href.indexOf('/booster/') === 0) {
-                    this._removeItem(item);
+                    this._mark_for_removal(item);
                     continue;
                 }
-                var id = this._get_id(item);
+                var id = this._get_item_id(item);
                 if (this.storage.is_hidden(id)) {
-                    this._removeItem(item);
+                    this._mark_for_removal(item);
                     continue;
                 }
                 var img = item.getElementsByTagName('img')[0];
                 var img_src = img.getAttribute('src');
                 if (img_src.indexOf('noimage.gif') != -1) {
-                    this._removeItem(item);
+                    this._mark_for_removal(item);
                     continue;
                 }
                 if (photos.indexOf(img_src) != -1) {
-                    this._removeItem(item);
+                    this._mark_for_removal(item);
                     continue;
                 }
                 img.setAttribute('src', img_src.replace('/320x240/', '/640x480/'));
@@ -154,25 +152,25 @@ var response_parser_1 = require("./libs/response_parser");
                 item.getElementsByTagName('a')[0].innerHTML += '<span class="arrow-left" id_counter="' + id_counter + '"></span>';
                 item.getElementsByTagName('a')[0].innerHTML += '<span class="arrow-right" id_counter="' + id_counter + '"></span>';
                 var url = 'https://999.md' + href;
-                this.init_parses(id_counter, url);
+                this.parse(id_counter, url);
                 photos.push(img_src);
                 id_counter++;
             }
-            this._remove_marked_elements();
-            this.click_listener();
+            this._remove_marked();
+            this.handle_click_events();
         };
-        NineNineNinePlus.prototype.table_cleaner = function () {
+        NineNineNinePlus.prototype.filter_table_list_items = function () {
             var table = document.getElementsByClassName('ads-list-table')[0];
             var trs = table.getElementsByTagName('tr');
             for (var i = 0, len = trs.length; i < len; i++) {
                 var tr = trs[i];
                 if (tr.getElementsByClassName('ads-list-table-price')[0].innerHTML.trim().length == 0) {
-                    this._removeItem(tr);
+                    this._mark_for_removal(tr);
                     continue;
                 }
-                var id = this._get_id(tr);
+                var id = this._get_item_id(tr);
                 if (this.storage.is_hidden(id)) {
-                    this._removeItem(tr);
+                    this._mark_for_removal(tr);
                     continue;
                 }
                 var tooltip_icon = tr.getElementsByClassName('js-tooltip-photo')[0];
@@ -181,19 +179,19 @@ var response_parser_1 = require("./libs/response_parser");
                     tooltip_icon.setAttribute('data-image', tooltip_src);
                 }
             }
-            this._remove_marked_elements();
+            this._remove_marked();
         };
-        NineNineNinePlus.prototype.start_cleaners = function () {
+        NineNineNinePlus.prototype.filter_lists = function () {
             if (window.location.href.indexOf('/real-estate/') == -1)
                 return;
             if (document.getElementsByClassName('ads-list-table').length) {
-                this.table_cleaner();
+                this.filter_table_list_items();
             }
             if (document.getElementsByClassName('ads-list-photo-item').length) {
-                this.thumbs_cleaner();
+                this.filter_thumbs_list_items();
             }
         };
-        NineNineNinePlus.prototype.profile_page_extra = function () {
+        NineNineNinePlus.prototype.profile_page = function () {
             var self = this;
             var user_header = document.getElementsByClassName('user-profile-header');
             if (!document.getElementsByClassName('user-profile-header').length) {
@@ -203,7 +201,7 @@ var response_parser_1 = require("./libs/response_parser");
                 var items = document.getElementsByClassName('profile-ads-list-photo-item');
                 for (var i = 0, len = items.length; i < len; i++) {
                     var item = items[i];
-                    var id = self._get_id(item);
+                    var id = self._get_item_id(item);
                     self.storage.add_one_hidden(id);
                     self._fade_out(item);
                 }
@@ -212,7 +210,7 @@ var response_parser_1 = require("./libs/response_parser");
             var ban_btn = user_header[0].getElementsByClassName('ban-items')[0];
             ban_btn.addEventListener("click", btn_click_handler);
         };
-        NineNineNinePlus.prototype.add_links = function () {
+        NineNineNinePlus.prototype.add_links_to_menu = function () {
             var nav = document.getElementsByClassName('header_menu_nav');
             if (nav.length) {
                 var nav_inner = nav[0].getElementsByTagName('ul')[0];
@@ -257,7 +255,7 @@ var response_parser_1 = require("./libs/response_parser");
             };
             ul.addEventListener('click', ul_click_handler);
         };
-        NineNineNinePlus.prototype.window_load = function () {
+        NineNineNinePlus.prototype.on_window_loaded = function () {
             var self = this;
             window.addEventListener('load', function () {
                 var cookie = document.cookie;
@@ -267,7 +265,7 @@ var response_parser_1 = require("./libs/response_parser");
                     self.lang = lang_code;
                     self.locale.language = lang_code;
                 }
-                self.add_links();
+                self.add_links_to_menu();
                 self.init();
                 var body_element = document.getElementsByTagName('body')[0];
                 var observer = new MutationObserver(function (mutations) {
@@ -281,8 +279,8 @@ var response_parser_1 = require("./libs/response_parser");
             });
         };
         NineNineNinePlus.prototype.init = function () {
-            this.start_cleaners();
-            this.profile_page_extra();
+            this.filter_lists();
+            this.profile_page();
             this.show_hidden_page();
         };
         return NineNineNinePlus;

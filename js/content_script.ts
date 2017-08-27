@@ -17,8 +17,6 @@ import { ResponseParser } from './libs/response_parser';
 (function() {
 
   class NineNineNinePlus {
-
-    public removal_classname: string;
     public photo_galleries: object;
     public _photo_items: HTMLCollectionOf<Element>;
     public observer_config: object;
@@ -29,7 +27,6 @@ import { ResponseParser } from './libs/response_parser';
     public parser: ResponseParser;
 
     constructor() {
-      this.removal_classname = 'marked-for-removal';
       this.photo_galleries = {};
       this.observer_config = {
         attributes: true,
@@ -48,19 +45,20 @@ import { ResponseParser } from './libs/response_parser';
 
       //this.db.delete_all();
 
-      this.window_load(); // start stuff
+      this.on_window_loaded(); // start stuff
     }
 
-    _removeItem(el: HTMLElement | Element): void {
-      el.classList.add(this.removal_classname);
+    _mark_for_removal(el: HTMLElement | Element): void {
+      el.classList.add('marked-for-removal');
     }
 
-    _remove_marked_elements(): void {
-      let remove_el: HTMLCollectionOf<Element> = document.getElementsByClassName(this.removal_classname);
-      while (remove_el[0]) { remove_el[0].parentNode.removeChild(remove_el[0]); }
+    _remove_marked(): void {
+      let remove_el: HTMLCollectionOf<Element> = document.getElementsByClassName('marked-for-removal');
+      while (remove_el[0])
+        remove_el[0].parentNode.removeChild(remove_el[0]);
     }
 
-    _get_id(el: HTMLElement | Element): string {
+    _get_item_id(el: HTMLElement | Element): string {
       return el.getElementsByTagName('a')[0].getAttribute('href').split('/')[2];
     }
 
@@ -82,7 +80,7 @@ import { ResponseParser } from './libs/response_parser';
       tick();
     }
 
-    init_parses(id_counter: number, url: string) {
+    parse(id_counter: number, url: string) {
       var self = this;
       function cb (res: any): void {
         if (res == false) return;
@@ -110,14 +108,14 @@ import { ResponseParser } from './libs/response_parser';
       });
     }
 
-    click_listener(): void {
+    handle_click_events(): void {
       var self = this;
       function _click_handler(e: Event) : void {
         var target: HTMLElement = <HTMLElement> e.target;
         var item: HTMLElement = <HTMLElement>target.parentNode;
         
         if (target.classList.contains('item-rem')) {
-          var id: string = self._get_id(item);
+          var id: string = self._get_item_id(item);
           self.storage.add_one_hidden(id);
           item.parentNode.removeChild(item);
         }
@@ -147,7 +145,7 @@ import { ResponseParser } from './libs/response_parser';
       }
     }
 
-    thumbs_cleaner(): void {
+    filter_thumbs_list_items(): void {
       var photoItems: HTMLCollectionOf<Element> = document.getElementsByClassName('ads-list-photo-item');
       this._photo_items = photoItems;
       if (photoItems[0].classList.contains('js-cleaner-process')) {
@@ -163,19 +161,19 @@ import { ResponseParser } from './libs/response_parser';
         if (item == undefined) break;
 
         if (item.getElementsByClassName('ads-list-photo-item-price').length == 0) {
-          this._removeItem(item);
+          this._mark_for_removal(item);
           continue;
         }
 
         var href: string = item.getElementsByTagName('a')[0].getAttribute('href');
         if (href.indexOf('/booster/') === 0) {
-          this._removeItem(item);
+          this._mark_for_removal(item);
           continue;
         }
 
-        var id: string = this._get_id(item);
+        var id: string = this._get_item_id(item);
         if (this.storage.is_hidden(id)) {
-          this._removeItem(item);
+          this._mark_for_removal(item);
           continue;
         }
 
@@ -183,13 +181,13 @@ import { ResponseParser } from './libs/response_parser';
         var img: Element = item.getElementsByTagName('img')[0];
         var img_src: string = img.getAttribute('src');
         if (img_src.indexOf('noimage.gif') != -1) {
-          this._removeItem(item);
+          this._mark_for_removal(item);
           continue;
         }
 
         // @TODO replace with O(1)
         if (photos.indexOf(img_src) != -1) {
-          this._removeItem(item);
+          this._mark_for_removal(item);
           continue;
         }
         
@@ -200,17 +198,17 @@ import { ResponseParser } from './libs/response_parser';
         item.getElementsByTagName('a')[0].innerHTML += '<span class="arrow-right" id_counter="' + id_counter + '"></span>';
 
         var url: string = 'https://999.md' + href;
-        this.init_parses(id_counter, url);
+        this.parse(id_counter, url);
         
         photos.push(img_src);
         id_counter++;        
       }
 
-      this._remove_marked_elements();
-      this.click_listener();
+      this._remove_marked();
+      this.handle_click_events();
     }
 
-    table_cleaner(): void {
+    filter_table_list_items(): void {
       var table: Element = document.getElementsByClassName('ads-list-table')[0];
       var trs: NodeListOf<HTMLElement> = table.getElementsByTagName('tr');
 
@@ -218,13 +216,13 @@ import { ResponseParser } from './libs/response_parser';
         var tr: HTMLElement = trs[i];
 
         if (tr.getElementsByClassName('ads-list-table-price')[0].innerHTML.trim().length == 0) {
-          this._removeItem(tr);
+          this._mark_for_removal(tr);
           continue;
         }
 
-        var id: string = this._get_id(tr);
+        var id: string = this._get_item_id(tr);
         if (this.storage.is_hidden(id)) {
-          this._removeItem(tr);
+          this._mark_for_removal(tr);
           continue;
         }
 
@@ -235,21 +233,21 @@ import { ResponseParser } from './libs/response_parser';
         }
       }
 
-      this._remove_marked_elements();
+      this._remove_marked();
     }
 
-    start_cleaners() : void {
+    filter_lists() : void {
       if (window.location.href.indexOf('/real-estate/') == -1) return; // this should only work for real estate.
       if (document.getElementsByClassName('ads-list-table').length) {
-        this.table_cleaner();
+        this.filter_table_list_items();
       }
 
       if (document.getElementsByClassName('ads-list-photo-item').length) {
-        this.thumbs_cleaner();
+        this.filter_thumbs_list_items();
       }
     }
 
-    profile_page_extra() {
+    profile_page() {
       var self = this;
 
       // on user profile page
@@ -262,7 +260,7 @@ import { ResponseParser } from './libs/response_parser';
         var items: HTMLCollectionOf<Element> = document.getElementsByClassName('profile-ads-list-photo-item');
         for (var i = 0, len = items.length; i < len; i++) {
           var item: Element = items[i];
-          var id: string = self._get_id(item);
+          var id: string = self._get_item_id(item);
           self.storage.add_one_hidden(id);
           self._fade_out(item as HTMLElement);
         }
@@ -274,7 +272,7 @@ import { ResponseParser } from './libs/response_parser';
       ban_btn.addEventListener("click", btn_click_handler);
     }
 
-    add_links() {
+    add_links_to_menu() {
       var nav: HTMLCollectionOf<Element> = document.getElementsByClassName('header_menu_nav');
       if (nav.length) {
         var nav_inner: Element = nav[0].getElementsByTagName('ul')[0];
@@ -328,7 +326,7 @@ import { ResponseParser } from './libs/response_parser';
 
     }
 
-    window_load() {
+    on_window_loaded() {
       const self = this;
       window.addEventListener('load', function() {
         const cookie: any = document.cookie;
@@ -339,7 +337,7 @@ import { ResponseParser } from './libs/response_parser';
           self.locale.language = lang_code;
         }
 
-        self.add_links();
+        self.add_links_to_menu();
         self.init();
 
         const body_element: HTMLElement = document.getElementsByTagName('body')[0];
@@ -357,8 +355,8 @@ import { ResponseParser } from './libs/response_parser';
     }
 
     init() {
-      this.start_cleaners();
-      this.profile_page_extra();
+      this.filter_lists();
+      this.profile_page();
       this.show_hidden_page();
     }
   }

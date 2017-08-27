@@ -42,7 +42,7 @@ function restore_options() {
         approvedList: []
     }, function (items) {
         resellers_taggle = new taggle_1.Taggle('resellers_taggle', {
-            tags: items.resellersList || [],
+            tags: items.resellersList || default_sellers,
             onTagAdd: save_options,
             onTagRemove: save_options
         });

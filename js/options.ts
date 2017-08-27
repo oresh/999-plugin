@@ -66,7 +66,7 @@ function restore_options(): void {
   }, function(items) {
 
     resellers_taggle = new Taggle('resellers_taggle', {
-      tags: items.resellersList || [],
+      tags: items.resellersList || default_sellers,
       onTagAdd: save_options,
       onTagRemove: save_options
     });
